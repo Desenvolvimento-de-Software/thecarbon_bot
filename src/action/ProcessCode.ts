@@ -65,12 +65,32 @@ export default class ProcessCode extends Action {
 
         const offset = entity.offset as number;
         const length = entity.length as number;
+        const language = this.getLanguage(text, offset);
         const code = text.substring(offset, offset + length);
 
-        const imagePath = await this.getImagePath(code);
+        const imagePath = await this.getImagePath(language, code);
         if (imagePath && imagePath.length) {
             await this.sendPhoto(imagePath);
         }
+    }
+
+    /**
+     * Returns the given language, if any.
+     *
+     * @author Marcos Leandro <mleandrojr@yggdrasill.com.br>
+     * @since  2023-09-21
+     *
+     * @param text
+     * @param offset
+     *
+     * @return string
+     */
+    private getLanguage(text: string, offset: number): string {
+
+        let language = text.substring(0, offset).trim();
+        language = language.replace(/([a-zA-Z0-9_\=#\/-]+)\s.*/g, "$1");
+
+        return language.length ? language : "auto";
     }
 
     /**
@@ -79,13 +99,14 @@ export default class ProcessCode extends Action {
      * @author Marcos Leandro <mleandrojr@yggdrasill.com.br>
      * @since  2023-09-20
      *
+     * @param language
      * @param code
      *
      * @return string
      */
-    private async getImagePath(code: string): Promise<string|undefined> {
+    private async getImagePath(language: string, code: string): Promise<string|undefined> {
 
-        const carbon = new Carbon(this.context, code);
+        const carbon = new Carbon(this.context, language, code);
         const imagePath = await carbon.getImagePath();
 
         if (imagePath) {

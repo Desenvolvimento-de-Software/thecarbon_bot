@@ -34,6 +34,14 @@ export default class Carbon {
     private context: Context;
 
     /**
+     * Carbon language.
+     *
+     * @author Marcos Leandro
+     * @since  2023-09-21
+     */
+    private language = "auto";
+
+    /**
      * Code to be processed.
      *
      * @author Marcos Leandro <mleandrojr@yggdrasill.com.br>
@@ -47,10 +55,13 @@ export default class Carbon {
      * @author Marcos Leandro <mleandrojr@yggdrasill.com.br>
      * @since  2023-09-20
      *
+     * @param context
+     * @param language
      * @param code
      */
-    public constructor(context: Context, code: string) {
+    public constructor(context: Context, language: string, code: string) {
         this.context = context;
+        this.language = language;
         this.code = code;
     }
 
@@ -150,7 +161,7 @@ export default class Carbon {
             `bg=${process.env.CARBON_BACKGROUND}`,
             `t=${process.env.CARBON_THEME}`,
             `wt=${process.env.CARBON_WINDOW_THEME}`,
-            `l=${process.env.CARBON_LANGUAGE}`,
+            `l=${this.language}`,
             `width=${process.env.CARBON_WIDTH}`,
             `ds=${process.env.CARBON_DROP_SHADOW}`,
             `dsyoff=20px`,
