@@ -65,13 +65,17 @@ export default class Carbon {
     public async getImagePath(): Promise<string|undefined> {
 
         const url = this.getUrl();
-        const headless: boolean|"new"|undefined = process.env.PUPETEER_HEADLESS!.toString() === "true" ? "new" : false;
+        const headless: boolean|"new"|undefined = process.env.PUPPETEER_HEADLESS!.toString() === "true" ? "new" : false;
 
         /* Opening the browser window. */
         const browser = await Puppeteer.launch({ headless : headless });
         if (!browser) {
             throw new Error("Unable to launch Puppeteer.");
         }
+
+        /* Setting the clipboard permissions. */
+        const context = browser.defaultBrowserContext();
+        await context.overridePermissions(this.endpoint, ["clipboard-read", "clipboard-write"]);
 
         /* Creating a new page context (new tab). */
         const page = await browser.newPage();
@@ -97,6 +101,11 @@ export default class Carbon {
         /* Going to Carbon.now.sh and waiting for the idle. */
         await page.goto(url, { waitUntil : "networkidle2" });
         await page.waitForSelector(".copy-menu-container")
+
+        /* Sends the code to clipboard. */
+        await page.evaluate(code => {
+            window.navigator.clipboard.writeText = code => new Promise(() => code = code);
+        }, this.code);
 
         try {
 
