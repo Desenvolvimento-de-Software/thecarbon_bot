@@ -93,7 +93,7 @@ export default class Carbon {
 
             const exportButton = await page.$(`[data-cy="quick-export-button"]`);
             await exportButton!.click();
-            await page.waitForNetworkIdle({ idleTime: 250 });
+            await page.waitForNetworkIdle({ idleTime: 1000 });
 
             browser.close();
 
@@ -112,11 +112,10 @@ export default class Carbon {
 
             return `${path.resolve()}/tmp/${this.context.user.getId()}/${fileName}`;
 
-        } catch (err) {
-            throw new Error("Unable to click on copy button.");
+        } catch (err: any) {
+            console.error(err.toString());
+            return undefined;
         }
-
-        return undefined;
     }
 
     /**
