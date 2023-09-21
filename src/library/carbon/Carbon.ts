@@ -109,18 +109,6 @@ export default class Carbon {
 
         try {
 
-            const line = await page.$(".CodeMirror-line");
-            await line!.click();
-
-            /* Selects and deletes all the placeholder code. */
-            await page.keyboard.down("Control");
-            await page.keyboard.press("KeyA");
-            await page.keyboard.up("Control");
-            await page.keyboard.press("Backspace");
-
-            /* Writes the code to be processed. */
-            await page.keyboard.type(this.code, { delay : 5 });
-
             const exportButton = await page.$(`[data-cy="quick-export-button"]`);
             await exportButton!.click();
             await page.waitForNetworkIdle({ idleTime: 3000 });
@@ -178,7 +166,8 @@ export default class Carbon {
             `lh=${process.env.CARBON_LINE_HEIGHT}`,
             `si=${process.env.CARBON_SQUARE_IMAGE}`,
             `es=${process.env.CARBON_EXPORT_SIZE}`,
-            `wm=${process.env.CARBON_WATERMARK}`
+            `wm=${process.env.CARBON_WATERMARK}`,
+            `code=${this.code}`
         ];
 
         const uri = encodeURI(params.join("&"));
