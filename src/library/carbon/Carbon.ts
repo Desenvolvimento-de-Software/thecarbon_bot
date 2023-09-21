@@ -65,9 +65,10 @@ export default class Carbon {
     public async getImagePath(): Promise<string|undefined> {
 
         const url = this.getUrl();
+        const headless: boolean|"new"|undefined = process.env.PUPETEER_HEADLESS!.toString() === "true" ? "new" : false;
 
-        /*Opening the browser window. */
-        const browser = await Puppeteer.launch({ headless : "new" });
+        /* Opening the browser window. */
+        const browser = await Puppeteer.launch({ headless : headless });
         if (!browser) {
             throw new Error("Unable to launch Puppeteer.");
         }
@@ -99,11 +100,6 @@ export default class Carbon {
 
         try {
 
-            /* Sends the code to clipboard. */
-            await page.evaluate(code => {
-                navigator.clipboard.writeText(code);
-            }, this.code);
-
             const line = await page.$(".CodeMirror-line");
             await line!.click();
 
@@ -111,17 +107,14 @@ export default class Carbon {
             await page.keyboard.down("Control");
             await page.keyboard.press("KeyA");
             await page.keyboard.up("Control");
-            await page.keyboard.press("Delete");
+            await page.keyboard.press("Backspace");
 
-            /* Pastes the code from clipboard. */
-            await page.keyboard.down("Control");
-            await page.keyboard.press("KeyV");
-            await page.keyboard.up("Control");
+            /* Writes the code to be processed. */
+            await page.keyboard.type(this.code, { delay : 5 });
 
-            // await page.keyboard.type(this.code, { delay : 10 });
             const exportButton = await page.$(`[data-cy="quick-export-button"]`);
             await exportButton!.click();
-            await page.waitForNetworkIdle({ idleTime: 5000 });
+            await page.waitForNetworkIdle({ idleTime: 3000 });
 
             browser.close();
 
