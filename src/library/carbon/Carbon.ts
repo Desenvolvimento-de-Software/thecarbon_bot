@@ -93,7 +93,7 @@ export default class Carbon {
 
             const exportButton = await page.$(`[data-cy="quick-export-button"]`);
             await exportButton!.click();
-            await page.waitForNetworkIdle({ idleTime: 1000 });
+            await page.waitForNetworkIdle({ idleTime: 5000 });
 
             browser.close();
 
