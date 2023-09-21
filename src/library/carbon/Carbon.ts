@@ -65,32 +65,60 @@ export default class Carbon {
     public async getImagePath(): Promise<string|undefined> {
 
         const url = this.getUrl();
-        const browser = await Puppeteer.launch({ headless : "new" });
+
+        /*Opening the browser window. */
+        const browser = await Puppeteer.launch({ headless : false });
         if (!browser) {
             throw new Error("Unable to launch Puppeteer.");
         }
 
+        /* Creating a new page context (new tab). */
         const page = await browser.newPage();
         if (!page) {
             throw new Error("Unable to open new page.");
         }
 
+        /* Creating the user directory, if it doesn't exist. */
         if (!fs.existsSync(`${path.resolve()}/tmp/${this.context.user.getId()}`)) {
             fs.mkdirSync(`${path.resolve()}/tmp/${this.context.user.getId()}`, { recursive : true });
         }
 
+        /* Setting the download path. */
         const client = await page.target().createCDPSession();
         await client.send("Page.setDownloadBehavior", {
           behavior: "allow",
           downloadPath: `${path.resolve()}/tmp/${this.context.user.getId()}`,
         });
 
+        /* Setting the user agent. */
         await page.setUserAgent(new UserAgent().toString());
+
+        /* Going to Carbon.now.sh and waiting for the idle. */
         await page.goto(url, { waitUntil : "networkidle2" });
         await page.waitForSelector(".copy-menu-container")
 
         try {
 
+            /* Sends the code to clipboard. */
+            await page.evaluate(code => {
+                navigator.clipboard.writeText(code);
+            }, this.code);
+
+            const line = await page.$(".CodeMirror-line");
+            await line!.click();
+
+            /* Selects and deletes all the placeholder code. */
+            await page.keyboard.down("Control");
+            await page.keyboard.press("KeyA");
+            await page.keyboard.up("Control");
+            await page.keyboard.press("Delete");
+
+            /* Pastes the code from clipboard. */
+            await page.keyboard.down("Control");
+            await page.keyboard.press("KeyV");
+            await page.keyboard.up("Control");
+
+            // await page.keyboard.type(this.code, { delay : 10 });
             const exportButton = await page.$(`[data-cy="quick-export-button"]`);
             await exportButton!.click();
             await page.waitForNetworkIdle({ idleTime: 1000 });
@@ -148,8 +176,7 @@ export default class Carbon {
             `lh=${process.env.CARBON_LINE_HEIGHT}`,
             `si=${process.env.CARBON_SQUARE_IMAGE}`,
             `es=${process.env.CARBON_EXPORT_SIZE}`,
-            `wm=${process.env.CARBON_WATERMARK}`,
-            `code=${this.code}`
+            `wm=${process.env.CARBON_WATERMARK}`
         ];
 
         const uri = encodeURI(params.join("&"));
