@@ -67,7 +67,7 @@ export default class Carbon {
         const url = this.getUrl();
 
         /*Opening the browser window. */
-        const browser = await Puppeteer.launch({ headless : false });
+        const browser = await Puppeteer.launch({ headless : "new" });
         if (!browser) {
             throw new Error("Unable to launch Puppeteer.");
         }
