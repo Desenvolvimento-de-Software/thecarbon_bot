@@ -14,6 +14,7 @@ import Carbon from "../library/carbon/Carbon.js";
 import Context from "../library/telegram/context/Context.js";
 import { MessageEntity } from "src/library/telegram/type/MessageEntity.js";
 import fs from "fs";
+import Log from "../helper/Log.js";
 
 export default class ProcessCode extends Action {
 
@@ -142,9 +143,11 @@ export default class ProcessCode extends Action {
         });
 
         const data = await response.json();
+        fs.unlinkSync(imagePath);
 
-        if (data.ok) {
-            fs.unlinkSync(imagePath);
+        if (!data.hasOwnProperty("ok") || !data.ok) {
+            Log.save(JSON.stringify(data));
+            this.context.message.reply("Sorry, I couldn't process your code. Please, try again later.");
         }
     }
 }
